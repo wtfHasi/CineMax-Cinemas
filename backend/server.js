@@ -9,8 +9,12 @@ import mongoose from './config/mongoose.js';
 // Import your models
 import { FilmListing, Screening } from './models/index.js';
 
+// Import routes
+import userRoutes from './routes/userRoutes.js';
+
 const app = express();
 app.use(express.json());
+app.use('/api/users', userRoutes);
 
 mongoose.connection.once('open', async () => {
   try {
@@ -22,6 +26,6 @@ mongoose.connection.once('open', async () => {
   }
 });
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT;
 app.listen(PORT, () => console.log(`Backend Server running on port ${PORT}`));
 
