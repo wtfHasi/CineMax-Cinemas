@@ -1,11 +1,25 @@
-import { DataTypes } from 'sequelize';
-import sequelize from '../config/database.js';
-
-const Cinema = sequelize.define('Cinema', {
-  cinema_id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
-  city: { type: DataTypes.STRING, allowNull: false },
-  location: { type: DataTypes.STRING, allowNull: false },
-  screen_count: { type: DataTypes.INTEGER, allowNull: false }
-});
-
-export default Cinema;
+'use strict';
+const {
+  Model
+} = require('sequelize');
+module.exports = (sequelize, DataTypes) => {
+  class Cinema extends Model {
+    /**
+     * Helper method for defining associations.
+     * This method is not a part of Sequelize lifecycle.
+     * The `models/index` file will call this method automatically.
+     */
+    static associate(models) {
+      // define association here
+    }
+  }
+  Cinema.init({
+    city: DataTypes.STRING,
+    location: DataTypes.STRING,
+    screen_count: DataTypes.INTEGER
+  }, {
+    sequelize,
+    modelName: 'Cinema',
+  });
+  return Cinema;
+};
