@@ -13,26 +13,15 @@ const app = express();
 app.use(express.json());
 
 mongoose.connection.once('open', async () => {
-  console.log('MongoDB Connection Established');
-
   try {
     await FilmListing.createCollection();
-    console.log("FilmListing collection created");
-
     await Screening.createCollection();
-    console.log("Screening collection created");
+    console.log("Collections created");
   } catch (err) {
     console.error("Error creating MongoDB collections:", err);
   }
 });
 
-sequelize.sync({ alter: true })
-  .then(() => {
-    console.log("PostgreSQL models synchronized");
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`Backend Server running on port ${PORT}`));
 
-    const PORT = process.env.PORT || 5000;
-    app.listen(PORT, () => console.log(`Backend Server running on port ${PORT}`));
-  })
-  .catch((err) => {
-    console.error("Error synchronizing PostgreSQL models:", err);
-  });
