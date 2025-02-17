@@ -1,12 +1,21 @@
 import Booking from '../models/Booking.js';
 import Showtime from '../models/showtime.js';
-import User from '../models/User.js';
+import User from '../models/user.js';
 
 const BookingController = {
   createBooking: async (req, res) => {
     try {
-      const { user_id, showtime_id, seat_numbers, total_price } = req.body;
+      const { user_id, showtime_id, seat_numbers } = req.body;
 
+      // Fetch showtime details (price per seat)
+      const showtime = await Showtime.findOne({ where: { showtime_id } });
+      if (!showtime) return res.status(404).json({ message: 'Showtime not found' });
+
+      // Calculate total price based on seat count
+      const seatCount = seat_numbers.split(',').length;
+      const total_price = parseFloat(showtime.price) * seatCount;
+
+      // Create Booking
       const booking = await Booking.create({ user_id, showtime_id, seat_numbers, total_price });
 
       res.status(201).json({ message: 'Booking created successfully', booking });
