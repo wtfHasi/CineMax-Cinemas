@@ -1,37 +1,17 @@
 'use strict';
 export async function up(queryInterface, Sequelize) {
   await queryInterface.createTable('Films', {
-      film_id: {
-        allowNull: false,
-        autoIncrement: true,
-        primaryKey: true,
-        type: Sequelize.INTEGER
-      },
-      title: {
-        type: Sequelize.STRING
-      },
-      description: {
-        type: Sequelize.TEXT
-      },
-      genre: {
-        type: Sequelize.STRING
-      },
-      rating: {
-        type: Sequelize.STRING
-      },
-      duration: {
-        type: Sequelize.INTEGER
-      },
-      createdAt: {
-        allowNull: false,
-        type: Sequelize.DATE
-      },
-      updatedAt: {
-        allowNull: false,
-        type: Sequelize.DATE
-      }
-    });
-  }
-  export async function down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('Films');
-  }
+    film_id: { type: Sequelize.INTEGER, autoIncrement: true, primaryKey: true },
+    title: { type: Sequelize.STRING, allowNull: false },
+    description: { type: Sequelize.TEXT, allowNull: false },
+    genre: { type: Sequelize.STRING, allowNull: false },
+    rating: { type: Sequelize.STRING, allowNull: false },
+    duration: { type: Sequelize.INTEGER, allowNull: false },
+    createdAt: { type: Sequelize.DATE, allowNull: false },
+    updatedAt: { type: Sequelize.DATE, allowNull: false }
+  });
+}
+
+export async function down(queryInterface, Sequelize) {
+  await queryInterface.dropTable('Films');
+}
