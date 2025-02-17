@@ -14,6 +14,8 @@ import userRoutes from './routes/userRoutes.js';
 import filmRoutes from './routes/filmRoutes.js';
 import cinemaRoutes from './routes/cinemaRoutes.js';
 import bookingRoutes from './routes/bookingRoutes.js';
+import screenRoutes from './routes/screenRoutes.js';
+import showtimeRoutes from './routes/showtimeRoutes.js';
 
 const app = express();
 app.use(express.json());
@@ -21,6 +23,8 @@ app.use('/api/users', userRoutes);
 app.use('/api/films', filmRoutes);
 app.use('/api/cinemas', cinemaRoutes);
 app.use('/api/bookings', bookingRoutes);
+app.use('/api/screens', screenRoutes);
+app.use('/api/showtimes', showtimeRoutes);
 
 mongoose.connection.once('open', async () => {
   try {
