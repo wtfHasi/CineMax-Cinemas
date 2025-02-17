@@ -5,6 +5,7 @@ const CinemaController = {
     try {
       const { city, location, screen_count } = req.body;
       const cinema = await Cinema.create({ city, location, screen_count });
+
       res.status(201).json({ message: 'Cinema added successfully', cinema });
     } catch (error) {
       res.status(500).json({ error: error.message });
