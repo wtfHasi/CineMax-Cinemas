@@ -1,25 +1,54 @@
-import Booking from '../models/Booking.js';
+import Booking from '../models/booking.js';
 import Showtime from '../models/showtime.js';
 import User from '../models/user.js';
+import sequelize from '../config/database.js';
 
 const BookingController = {
   createBooking: async (req, res) => {
     try {
-      const { user_id, showtime_id, seat_numbers } = req.body;
+      const { user_id, showtime_id, seat_numbers, seating_type } = req.body;
 
-      // Fetch showtime details (price per seat)
-      const showtime = await Showtime.findOne({ where: { showtime_id } });
+      // Start a transaction
+      const transaction = await sequelize.transaction();
+
+      // Fetch showtime details
+      const showtime = await Showtime.findOne({ where: { showtime_id }, transaction });
       if (!showtime) return res.status(404).json({ message: 'Showtime not found' });
 
-      // Calculate total price based on seat count
+      // Determine seat count
       const seatCount = seat_numbers.split(',').length;
-      const total_price = parseFloat(showtime.price) * seatCount;
 
-      // Create Booking
-      const booking = await Booking.create({ user_id, showtime_id, seat_numbers, total_price });
+      // Check seat availability & update remaining seats
+      let seatPrice;
+      if (seating_type === 'Lower Hall') {
+        if (showtime.lower_hall_seats < seatCount) return res.status(400).json({ message: 'Not enough Lower Hall seats available' });
+        showtime.lower_hall_seats -= seatCount;
+        seatPrice = showtime.base_price;
+      } else if (seating_type === 'Upper Gallery') {
+        if (showtime.upper_gallery_seats < seatCount) return res.status(400).json({ message: 'Not enough Upper Gallery seats available' });
+        showtime.upper_gallery_seats -= seatCount;
+        seatPrice = showtime.base_price * 1.2;
+      } else if (seating_type === 'VIP') {
+        if (showtime.vip_seats < seatCount) return res.status(400).json({ message: 'Not enough VIP seats available' });
+        showtime.vip_seats -= seatCount;
+        seatPrice = showtime.base_price * 1.44;
+      } else {
+        return res.status(400).json({ message: 'Invalid seating type' });
+      }
+
+      // Calculate total price
+      const total_price = seatCount * seatPrice;
+
+      // Save updates
+      await showtime.save({ transaction });
+      const booking = await Booking.create({ user_id, showtime_id, seat_numbers, seating_type, total_price }, { transaction });
+
+      // Commit transaction
+      await transaction.commit();
 
       res.status(201).json({ message: 'Booking created successfully', booking });
     } catch (error) {
+      console.error(error);
       res.status(500).json({ error: error.message });
     }
   },
