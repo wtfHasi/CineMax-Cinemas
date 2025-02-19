@@ -3,7 +3,7 @@ import FilmListing from './FilmListing.js';
 import Screening from './screening.js';
 // ----- Sequelize Models (Postgre) -----
 import User from './user.js';
-import Booking from './Booking.js';
+import Booking from './booking.js';
 import Cinema from './Cinema.js';
 import Film from './Film.js';
 import Screen from './screen.js';
