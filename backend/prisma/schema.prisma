@@ -1,0 +1,80 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("PG_URI")
+}
+
+model User {
+  user_id        Int     @id @default(autoincrement())
+  username       String  @unique
+  password_hash  String
+  role           enum_Users_role
+  bookings       Booking[]
+}
+
+model Cinema {
+  cinema_id     Int     @id @default(autoincrement())
+  city          String
+  location      String
+  screen_count  Int
+  screens       Screen[]
+}
+
+model Screen {
+  screen_id          Int     @id @default(autoincrement())
+  cinema_id         Int
+  screen_number      Int
+  seating_capacity   Int
+  cinema             Cinema  @relation(fields: [cinema_id], references: [cinema_id])
+  showtimes          Showtime[]
+}
+
+model Film {
+  film_id      Int     @id @default(autoincrement())
+  title        String
+  description  String?
+  genre        String?
+  rating       String?
+  duration     Int?
+  showtimes    Showtime[]
+}
+
+model Showtime {
+  showtime_id         Int     @id @default(autoincrement())
+  film_id             Int
+  screen_id           Int
+  showtime            DateTime
+  lower_hall_seats    Int
+  upper_gallery_seats Int
+  vip_seats           Int
+  base_price          Float
+  screen              Screen  @relation(fields: [screen_id], references: [screen_id])
+  film                Film    @relation(fields: [film_id], references: [film_id])
+  bookings            Booking[]
+}
+
+model Booking {
+  booking_id   Int     @id @default(autoincrement())
+  user_id      Int
+  showtime_id  Int
+  seat_numbers String
+  seating_type enum_Bookings_seating_type
+  total_price  Float
+  user         User    @relation(fields: [user_id], references: [user_id])
+  showtime     Showtime @relation(fields: [showtime_id], references: [showtime_id])
+}
+
+enum enum_Bookings_seating_type {
+  Lower_Hall    @map("Lower Hall")
+  Upper_Gallery @map("Upper Gallery")
+  VIP
+}
+
+enum enum_Users_role {
+  Booking_Staff @map("Booking Staff")
+  Admin
+  Manager
+}
