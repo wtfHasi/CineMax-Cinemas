@@ -1,10 +1,13 @@
-import Film from '../models/Film.js';
+import { PrismaClient } from '@prisma/client';
+const prisma = new PrismaClient();
 
 const FilmController = {
   addFilm: async (req, res) => {
     try {
       const { title, description, genre, rating, duration } = req.body;
-      const film = await Film.create({ title, description, genre, rating, duration });
+      const film = await prisma.film.create({
+        data: { title, description, genre, rating, duration }
+      });
 
       res.status(201).json({ message: 'Film added successfully', film });
     } catch (error) {
@@ -15,11 +18,12 @@ const FilmController = {
   updateFilm: async (req, res) => {
     try {
       const { id } = req.params;
-      const [updated] = await Film.update(req.body, { where: { film_id: id } });
+      const updatedFilm = await prisma.film.update({
+        where: { film_id: Number(id) },
+        data: req.body
+      });
 
-      if (!updated) return res.status(404).json({ message: 'Film not found' });
-
-      res.json({ message: 'Film updated successfully' });
+      res.json({ message: 'Film updated successfully', updatedFilm });
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
@@ -28,9 +32,7 @@ const FilmController = {
   deleteFilm: async (req, res) => {
     try {
       const { id } = req.params;
-      const deleted = await Film.destroy({ where: { film_id: id } });
-
-      if (!deleted) return res.status(404).json({ message: 'Film not found' });
+      await prisma.film.delete({ where: { film_id: Number(id) } });
 
       res.json({ message: 'Film deleted successfully' });
     } catch (error) {
@@ -40,7 +42,7 @@ const FilmController = {
 
   getAllFilms: async (req, res) => {
     try {
-      const films = await Film.findAll();
+      const films = await prisma.film.findMany();
       res.json(films);
     } catch (error) {
       res.status(500).json({ error: error.message });
