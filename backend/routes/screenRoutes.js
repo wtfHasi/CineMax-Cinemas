@@ -1,5 +1,6 @@
 import express from 'express';
 import ScreenController from '../controllers/screenController.js';
+import { authMiddleware, roleMiddleware } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 

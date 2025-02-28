@@ -1,5 +1,6 @@
 import express from 'express';
 import ShowtimeController from '../controllers/showtimeController.js';
+import { authMiddleware, roleMiddleware } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
