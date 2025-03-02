@@ -8,31 +8,57 @@ const ShowtimeController = {
       const { film_id, screen_id, showtime } = req.body;
       const screen = await prisma.screen.findUnique({ where: { screen_id } });
       if (!screen) return res.status(404).json({ message: 'Screen not found' });
-      // Distribute seats
-      const lower_hall_seats = Math.floor(screen.seating_capacity * 0.3); // 30% of total seats
-      const vip_seats = Math.min(10, Math.floor(screen.seating_capacity * 0.1)); // Max 10 VIP seats
-      const upper_gallery_seats = screen.seating_capacity - (lower_hall_seats + vip_seats); // Remaining seats
-
-      let basePrice;
+  
+      // Calculate seat distribution
+      const lowerHallSeats = Math.floor(screen.seating_capacity * 0.3);
+      const vipSeats = Math.min(10, Math.floor(screen.seating_capacity * 0.1));
+      const upperGallerySeats = screen.seating_capacity - (lowerHallSeats + vipSeats);
+  
+      // Generate seat data
+      const seats = [];
+      for (let i = 1; i <= lowerHallSeats; i++) {
+        seats.push({ seating_type: 'Lower Hall', seat_number: `LH${i}` });
+      }
+      for (let i = 1; i <= vipSeats; i++) {
+        seats.push({ seating_type: 'VIP', seat_number: `VIP${i}` });
+      }
+      for (let i = 1; i <= upperGallerySeats; i++) {
+        seats.push({ seating_type: 'Upper Gallery', seat_number: `UG${i}` });
+      }
+  
+      // Calculate base price based on showtime
       const hour = new Date(showtime).getHours();
-
+      let basePrice;
       if (hour >= 8 && hour < 12) basePrice = 5; // Morning Show
       else if (hour >= 12 && hour < 18) basePrice = 6; // Afternoon Show
       else if (hour >= 18 && hour < 24) basePrice = 7; // Evening Show
-      else return res.status(400).json({ message: 'Invalid showtime' });
-
-      const newShowtime = await prisma.showtime.create({
-        data: {
-          film_id,
-          screen_id,
-          showtime: new Date(showtime),
-          lower_hall_seats,
-          upper_gallery_seats,
-          vip_seats,
-          base_price: basePrice
-        }
+      else throw new Error('Invalid showtime');
+  
+      // Create showtime and seats in transaction
+      const newShowtime = await prisma.$transaction(async (prisma) => {
+        const showtimeRecord = await prisma.showtime.create({
+          data: {
+            film_id,
+            screen_id,
+            showtime: new Date(showtime),
+            base_price: basePrice, // Add the calculated base price
+            lower_hall_seats: lowerHallSeats,
+            upper_gallery_seats: upperGallerySeats,
+            vip_seats: vipSeats
+          }
+        });
+  
+        await prisma.seat.createMany({
+          data: seats.map(seat => ({
+            showtime_id: showtimeRecord.showtime_id,
+            ...seat,
+            booking_id: null
+          }))
+        });
+  
+        return showtimeRecord;
       });
-
+  
       res.status(201).json({ message: 'Showtime added successfully', showtime: newShowtime });
     } catch (error) {
       res.status(500).json({ error: error.message });
