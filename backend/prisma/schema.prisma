@@ -8,15 +8,15 @@ datasource db {
 }
 
 model User {
-  user_id        Int     @id @default(autoincrement())
-  username       String  @unique
+  user_id        Int      @id @default(autoincrement())
+  username       String   @unique
   password_hash  String
   role           enum_Users_role
   bookings       Booking[]
 }
 
 model Cinema {
-  cinema_id     Int     @id @default(autoincrement())
+  cinema_id     Int      @id @default(autoincrement())
   city          String
   location      String
   screen_count  Int
@@ -24,16 +24,16 @@ model Cinema {
 }
 
 model Screen {
-  screen_id          Int     @id @default(autoincrement())
-  cinema_id         Int
+  screen_id          Int        @id @default(autoincrement())
+  cinema_id          Int
   screen_number      Int
   seating_capacity   Int
-  cinema             Cinema  @relation(fields: [cinema_id], references: [cinema_id])
+  cinema             Cinema     @relation(fields: [cinema_id], references: [cinema_id])
   showtimes          Showtime[]
 }
 
 model Film {
-  film_id      Int     @id @default(autoincrement())
+  film_id      Int        @id @default(autoincrement())
   title        String
   description  String?
   genre        String?
@@ -43,7 +43,7 @@ model Film {
 }
 
 model Showtime {
-  showtime_id         Int     @id @default(autoincrement())
+  showtime_id         Int        @id @default(autoincrement())
   film_id             Int
   screen_id           Int
   showtime            DateTime
@@ -51,20 +51,34 @@ model Showtime {
   upper_gallery_seats Int
   vip_seats           Int
   base_price          Float
-  screen              Screen  @relation(fields: [screen_id], references: [screen_id])
-  film                Film    @relation(fields: [film_id], references: [film_id])
+  screen              Screen     @relation(fields: [screen_id], references: [screen_id])
+  film                Film       @relation(fields: [film_id], references: [film_id])
   bookings            Booking[]
+  seats               Seat[]
 }
 
 model Booking {
-  booking_id   Int     @id @default(autoincrement())
+  booking_id   Int        @id @default(autoincrement())
   user_id      Int
   showtime_id  Int
   seat_numbers String
   seating_type enum_Bookings_seating_type
   total_price  Float
-  user         User    @relation(fields: [user_id], references: [user_id])
-  showtime     Showtime @relation(fields: [showtime_id], references: [showtime_id])
+  user         User       @relation(fields: [user_id], references: [user_id])
+  showtime     Showtime   @relation(fields: [showtime_id], references: [showtime_id])
+  seats        Seat[]
+}
+
+model Seat {
+  seat_id       Int        @id @default(autoincrement())
+  showtime_id   Int
+  seating_type  String
+  seat_number   String
+  booking_id    Int?
+  showtime      Showtime   @relation(fields: [showtime_id], references: [showtime_id])
+  booking       Booking?   @relation(fields: [booking_id], references: [booking_id])
+
+  @@unique([showtime_id, seating_type, seat_number], name: "seat_unique")
 }
 
 enum enum_Bookings_seating_type {
